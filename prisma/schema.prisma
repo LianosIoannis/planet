@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Supplier {
+  id       Int     @id @default(autoincrement())
+  code     String  @unique
+  name     String
+  afm      String  @unique
+  isActive Boolean @default(true)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Document  Document[]
+}
+
+model Customer {
+  id       Int     @id @default(autoincrement())
+  code     String  @unique
+  name     String
+  afm      String  @unique
+  isActive Boolean @default(true)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Document  Document[]
+}
+
+model Material {
+  id   Int    @id @default(autoincrement())
+  code String @unique
+  name String
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  SpecialItem  SpecialItem?
+  DocumentLine DocumentLine[]
+
+  Document   Document[]
+  recipeLine RecipeLine[]
+
+  @@index([name])
+}
+
+model SpecialItem {
+  id Int @id @default(autoincrement())
+
+  materialId Int      @unique
+  material   Material @relation(fields: [materialId], references: [id])
+
+  recipes Recipe[]
+}
+
+model Recipe {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  specialItemId Int
+  specialItem   SpecialItem @relation(fields: [specialItemId], references: [id])
+
+  recipeLine RecipeLine[]
+}
+
+model RecipeLine {
+  id       Int    @id @default(autoincrement())
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  qty Decimal
+
+  @@unique([recipeId, materialId])
+  @@index([materialId])
+}
+
+model DocumentType {
+  id        Int     @id @default(autoincrement())
+  code      String  @unique // e.g. "INCOMING", "SALE", "DESTRUCTION"
+  name      String // human readable
+  direction Int // +1 for add stock, -1 for reduce stock
+  isActive  Boolean @default(true)
+
+  documents Document[]
+}
+
+model Document {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @default(now())
+  series String
+  number Int
+  notes  String?
+
+  documentTypeId Int
+  documentType   DocumentType @relation(fields: [documentTypeId], references: [id])
+
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  supplierId Int?
+  customerId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  lines DocumentLine[]
+
+  @@unique([series, number])
+}
+
+model DocumentLine {
+  id         Int      @id @default(autoincrement())
+  documentId Int
+  document   Document @relation(fields: [documentId], references: [id])
+
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  qty Decimal
+
+  @@index([materialId])
+  @@index([documentId])
+}
