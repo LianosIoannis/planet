@@ -47,8 +47,9 @@ model Material {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  recipeLine  RecipeLine[]
-  MatrialInfo MaterialLot[]
+  recipeLine   RecipeLine[]
+  MatrialInfo  MaterialLot[]
+  DocumentLine DocumentLine[]
 }
 
 model MaterialLot {
@@ -154,8 +155,11 @@ model DocumentLine {
 
   lineNo Int
 
-  materialLotId Int
-  materialLot   MaterialLot @relation(fields: [materialLotId], references: [id])
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  materialLotId Int?
+  materialLot   MaterialLot? @relation(fields: [materialLotId], references: [id])
 
   movementDirection MovementDirection
 

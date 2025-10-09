@@ -90,11 +90,13 @@ CREATE TABLE "DocumentLine" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "documentId" INTEGER NOT NULL,
     "lineNo" INTEGER NOT NULL,
-    "materialLotId" INTEGER NOT NULL,
+    "materialId" INTEGER NOT NULL,
+    "materialLotId" INTEGER,
     "movementDirection" TEXT NOT NULL,
     "qty" DECIMAL NOT NULL,
     CONSTRAINT "DocumentLine_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "DocumentLine_materialLotId_fkey" FOREIGN KEY ("materialLotId") REFERENCES "MaterialLot" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "DocumentLine_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "DocumentLine_materialLotId_fkey" FOREIGN KEY ("materialLotId") REFERENCES "MaterialLot" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex

@@ -1,6 +1,7 @@
 import { prisma } from "./seed_client.js";
 import { seedCustomers } from "./seed_customer.js";
 import { seedMaterials } from "./seed_material.js";
+import { seedRecipes } from "./seed_recipe.js";
 import { seedSpecialItems } from "./seed_specialItem.js";
 import { seedSuppliers } from "./seed_supplier.js";
 
@@ -9,6 +10,7 @@ async function main() {
 	await seedCustomers();
 	await seedMaterials();
 	await seedSpecialItems();
+	await seedRecipes();
 }
 
 main()
