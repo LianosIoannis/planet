@@ -104,5 +104,5 @@ export async function seedDocumentPurchase() {
 		],
 	});
 
-	console.log("✅Seeded 3 purchase documents.");
+	console.log("✅ Seeded 3 purchase documents.");
 }
