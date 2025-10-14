@@ -56,7 +56,7 @@ model MaterialLot {
   id Int @id @default(autoincrement())
 
   materialId Int
-  material   Material @relation(references: [id], fields: [materialId])
+  material   Material @relation(references: [id], fields: [materialId], onDelete: Cascade, onUpdate: Cascade)
 
   lot String
 
@@ -72,7 +72,7 @@ model SpecialItem {
   id Int @id @default(autoincrement())
 
   materialId Int      @unique
-  material   Material @relation(fields: [materialId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   recipes Recipe[]
 }
@@ -86,7 +86,7 @@ model Recipe {
   updatedAt DateTime @updatedAt
 
   specialItemId Int
-  specialItem   SpecialItem @relation(fields: [specialItemId], references: [id])
+  specialItem   SpecialItem @relation(fields: [specialItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   recipeLine RecipeLine[]
   document   Document[]
@@ -96,10 +96,10 @@ model RecipeLine {
   id Int @id @default(autoincrement())
 
   recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Restrict, onUpdate: Cascade )
 
   materialId Int
-  material   Material @relation(fields: [materialId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   qty Decimal
 
@@ -135,9 +135,9 @@ model Document {
   customerId Int?
   recipeId   Int?
 
-  supplier Supplier? @relation(fields: [supplierId], references: [id])
-  customer Customer? @relation(fields: [customerId], references: [id])
-  recipe   Recipe?   @relation(fields: [recipeId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  recipe   Recipe?   @relation(fields: [recipeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,10 +156,10 @@ model DocumentLine {
   lineNo Int
 
   materialId Int
-  material   Material @relation(fields: [materialId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   materialLotId Int?
-  materialLot   MaterialLot? @relation(fields: [materialLotId], references: [id])
+  materialLot   MaterialLot? @relation(fields: [materialLotId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   movementDirection MovementDirection
 

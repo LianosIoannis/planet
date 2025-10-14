@@ -13,7 +13,7 @@ export async function seedRecipes() {
 	}
 
 	const firstRecipeComponents = ["MAT003", "MAT004", "MAT005", "MAT006"];
-	const secondRecipeComponents = ["MAT007", "MAT008", "MAT009", "MAT010"];
+	const secondRecipeComponents = ["MAT007", "MAT008", "MAT009", /*"MAT010"*/];
 
 	const [firstMaterials, secondMaterials] = await Promise.all([
 		prisma.material.findMany({ where: { code: { in: firstRecipeComponents } }, orderBy: { code: "asc" } }),
