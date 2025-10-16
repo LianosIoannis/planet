@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { DocumentKind, MovementDirection, Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "./seed_client.js";
 
@@ -27,11 +28,11 @@ export async function createSaleDocumentWithLots(input: CreateSaleWithLotsInput)
 		});
 
 		const resolved = input.lines.map((l, idx) => {
-			const materialId = lots.map((lot) => lot.id).find((id) => id === l.materialLotId) as number;
+			const lot = lots.find((x) => x.id === l.materialLotId);
 
 			return {
 				lineNo: idx + 1,
-				materialId,
+				materialId: lot?.materialId as number,
 				materialLotId: l.materialLotId,
 				qty: new Prisma.Decimal(l.qty),
 			};
@@ -40,7 +41,7 @@ export async function createSaleDocumentWithLots(input: CreateSaleWithLotsInput)
 		return tx.document.create({
 			data: {
 				kind: SALE,
-				date: input.date,
+				date: dayjs(input.date).toDate(),
 				number: input.number,
 				notes: input.notes ?? null,
 				customer: { connect: { id: input.customerId } },

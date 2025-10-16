@@ -1,11 +1,12 @@
+import dayjs from "dayjs";
 import { DocumentKind, MovementDirection, Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "./seed_client.js";
 
 export type PurchaseLineInput = {
 	materialId: number;
 	lot: string;
-	productionDate: Date | string;
-	expirationDate: Date | string;
+	productionDate: Date;
+	expirationDate: Date;
 	qty: number;
 };
 
@@ -25,7 +26,7 @@ export async function createPurchaseDocumentWithLots(input: CreatePurchaseWithLo
 		return tx.document.create({
 			data: {
 				kind: PURCHASE,
-				date: input.date,
+				date: dayjs(input.date).toDate(),
 				number: input.number,
 				notes: input.notes ?? null,
 				supplier: { connect: { id: input.supplierId } },
@@ -48,8 +49,8 @@ export async function createPurchaseDocumentWithLots(input: CreatePurchaseWithLo
 								create: {
 									material: { connect: { id: line.materialId } },
 									lot: line.lot,
-									productionDate: new Date(line.productionDate),
-									expirationDate: new Date(line.expirationDate),
+									productionDate: dayjs(line.productionDate).toDate(),
+									expirationDate: dayjs(line.expirationDate).toDate(),
 								},
 							},
 						},

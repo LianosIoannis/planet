@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { DocumentKind, MovementDirection, Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "./seed_client.js";
 
@@ -62,8 +63,8 @@ export async function createProductionDocument(input: CreateProductionInput) {
 					create: {
 						material: { connect: { id: finishedMaterialId } },
 						lot: input.lot,
-						productionDate: input.date,
-						expirationDate: input.date,
+						productionDate: dayjs(input.date).toDate(),
+						expirationDate: dayjs(input.date).add(1, "year").toDate(),
 					},
 				},
 			},
@@ -82,7 +83,7 @@ export async function createProductionDocument(input: CreateProductionInput) {
 		return tx.document.create({
 			data: {
 				kind: PRODUCTION,
-				date: input.date,
+				date: dayjs(input.date).toDate(),
 				number: input.number,
 				notes: input.notes ?? null,
 				recipe: { connect: { id: input.recipeId } },
