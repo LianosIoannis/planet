@@ -27,6 +27,30 @@ app.get("/get-special-products", async (_, res) => {
 	res.json(result);
 });
 
+app.get("/get-all-products", async (_, res) => {
+	const result = await prisma.material.findMany();
+	res.json(result);
+});
+
+app.get("/get-recipes", async (_, res) => {
+	const result = await prisma.recipe.findMany();
+	res.json(result);
+});
+
+app.get("/get-material-lots/:id", async (req, res) => {
+	const id = parseInt(req.params.id, 10);
+	const result = await prisma.materialLot.findMany({ where: { materialId: id } });
+	res.json(result);
+});
+
+app.get("/get-recipe-materials/:id", async (req, res) => {
+	const id = parseInt(req.params.id, 10);
+	const lines = await prisma.recipeLine.findMany({ where: { recipeId: id } });
+	const materialIds = [...new Set(lines.map((line) => line.materialId))];
+	const result = await prisma.material.findMany({ where: { id: { in: materialIds } } });
+	res.json(result);
+});
+
 app.get("/get-purchase-documents", async (_, res) => {
 	const result = await prisma.document.findMany({ where: { kind: "PURCHASE" } });
 	res.json(result);
@@ -105,17 +129,20 @@ app.delete("/delete-special-product/:id", async (req, res) => {
 });
 
 app.post("/create-supplier", async (req, res) => {
+	console.dir(req.body);
 	try {
 		const supplier = await prisma.supplier.create({
 			data: req.body,
 		});
 		res.status(201).json(supplier);
 	} catch (err) {
+		console.dir(err);
 		res.status(500).json({ error: "Failed to create customer", message: err });
 	}
 });
 
 app.post("/create-customer", async (req, res) => {
+	console.dir(req.body);
 	try {
 		const customer = await prisma.customer.create({
 			data: req.body,
