@@ -6,7 +6,8 @@
   "scripts": {
     "seed": "tsx ./prisma/seeds/seed.ts",
     "reset": "prisma migrate reset -f && npm run seed",
-    "migrate": "prisma migrate dev --name init && npm run seed"
+    "migrate": "prisma migrate dev --name init && npm run seed",
+    "start": "tsx server.ts"
   },
   "keywords": [],
   "author": "",

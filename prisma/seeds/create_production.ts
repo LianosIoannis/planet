@@ -18,7 +18,7 @@ export async function createProductionDocument(input: CreateProductionInput) {
 	const OUT = MovementDirection.OUT;
 
 	return prisma.$transaction(async (tx) => {
-		const recipe = (await tx.recipe.findUnique({
+		const recipe = await tx.recipe.findUnique({
 			where: { id: input.recipeId },
 			include: {
 				specialItem: { select: { materialId: true } },
@@ -27,57 +27,54 @@ export async function createProductionDocument(input: CreateProductionInput) {
 					orderBy: { id: "asc" },
 				},
 			},
-		})) as {
-			specialItem: {
-				materialId: number;
-			};
-			recipeLine: {
-				id: number;
-				qty: Prisma.Decimal;
-				materialId: number;
-			}[];
-		} & {
-			name: string;
-			id: number;
-			createdAt: Date;
-			updatedAt: Date;
-			specialItemId: number;
-		};
+		});
 
 		const lots = await tx.materialLot.findMany({
 			where: { id: { in: input.materialLotIds } },
-			select: { id: true },
-			orderBy: { id: "asc" },
+			select: { id: true, materialId: true, expirationDate: true },
 		});
 
-		const finishedMaterialId = recipe.specialItem.materialId;
+		const lotByMaterialId = new Map(lots.map((l) => [l.materialId, l]));
+
+		const earliestLot = await tx.materialLot.findFirst({
+			where: { id: { in: input.materialLotIds } },
+			select: { expirationDate: true },
+			orderBy: { expirationDate: "asc" },
+		});
+
+		// biome-ignore lint/style/noNonNullAssertion: <seed>
+		const finishedMaterialId = recipe!.specialItem.materialId;
+		const fallbackExpiration = dayjs(input.date).add(1, "year").toDate();
+		const targetExpiration = earliestLot?.expirationDate ?? fallbackExpiration;
 
 		const finishedInLine = {
 			lineNo: 1,
 			movementDirection: IN,
-			qty: input.qty,
+			qty: new Prisma.Decimal(input.qty),
 			material: { connect: { id: finishedMaterialId } },
 			materialLot: {
-				connectOrCreate: {
-					where: { materialId_lot: { materialId: finishedMaterialId, lot: input.lot } },
-					create: {
-						material: { connect: { id: finishedMaterialId } },
-						lot: input.lot,
-						productionDate: dayjs(input.date).toDate(),
-						expirationDate: dayjs(input.date).add(1, "year").toDate(),
-					},
+				create: {
+					material: { connect: { id: finishedMaterialId } },
+					lot: input.lot, // must be unique per material
+					productionDate: dayjs(input.date).toDate(),
+					expirationDate: dayjs(targetExpiration).toDate(),
 				},
 			},
-		} as const;
+		};
 
-		const ingredientOutLines = recipe.recipeLine.map((ing, idx) => ({
-			lineNo: idx + 2,
-			movementDirection: OUT,
-			qty: new Prisma.Decimal(ing.qty).mul(new Prisma.Decimal(input.qty)),
-			material: { connect: { id: ing.materialId } },
-			// biome-ignore lint/style/noNonNullAssertion: <Seed>
-			materialLot: { connect: { id: lots[idx]!.id } },
-		}));
+		// biome-ignore lint/style/noNonNullAssertion: <seed>
+		const ingredientOutLines = recipe!.recipeLine.map((ing, idx) => {
+			// biome-ignore lint/style/noNonNullAssertion: <seed>
+			const lot = lotByMaterialId.get(ing.materialId)!;
+			const qty = new Prisma.Decimal(ing.qty).mul(new Prisma.Decimal(input.qty));
+			return {
+				lineNo: idx + 2,
+				movementDirection: OUT,
+				qty,
+				material: { connect: { id: ing.materialId } },
+				materialLot: { connect: { id: lot.id, materialId: ing.materialId } },
+			};
+		});
 
 		// 4) Create document
 		return tx.document.create({

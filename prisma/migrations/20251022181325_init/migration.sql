@@ -36,14 +36,14 @@ CREATE TABLE "MaterialLot" (
     "lot" TEXT NOT NULL,
     "productionDate" DATETIME NOT NULL,
     "expirationDate" DATETIME NOT NULL,
-    CONSTRAINT "MaterialLot_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "MaterialLot_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "SpecialItem" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "materialId" INTEGER NOT NULL,
-    CONSTRAINT "SpecialItem_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "SpecialItem_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -96,7 +96,7 @@ CREATE TABLE "DocumentLine" (
     "qty" DECIMAL NOT NULL,
     CONSTRAINT "DocumentLine_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "DocumentLine_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "DocumentLine_materialLotId_fkey" FOREIGN KEY ("materialLotId") REFERENCES "MaterialLot" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "DocumentLine_materialLotId_materialId_fkey" FOREIGN KEY ("materialLotId", "materialId") REFERENCES "MaterialLot" ("id", "materialId") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -116,6 +116,9 @@ CREATE UNIQUE INDEX "Material_code_key" ON "Material"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MaterialLot_materialId_lot_key" ON "MaterialLot"("materialId", "lot");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MaterialLot_id_materialId_key" ON "MaterialLot"("id", "materialId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SpecialItem_materialId_key" ON "SpecialItem"("materialId");

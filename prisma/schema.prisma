@@ -66,6 +66,7 @@ model MaterialLot {
   documentLines DocumentLine[]
 
   @@unique([materialId, lot])
+  @@unique([id, materialId])
 }
 
 model SpecialItem {
@@ -96,7 +97,7 @@ model RecipeLine {
   id Int @id @default(autoincrement())
 
   recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Restrict, onUpdate: Cascade )
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   materialId Int
   material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict, onUpdate: Cascade)
@@ -159,7 +160,7 @@ model DocumentLine {
   material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   materialLotId Int?
-  materialLot   MaterialLot? @relation(fields: [materialLotId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  materialLot   MaterialLot? @relation(fields: [materialLotId, materialId], references: [id, materialId], onDelete: Restrict, onUpdate: Cascade)
 
   movementDirection MovementDirection
 

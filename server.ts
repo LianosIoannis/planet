@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
 import { type CreateProductionInput, createProductionDocument } from "./prisma/seeds/create_production.js";
@@ -10,6 +12,16 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const browserDir = path.join(__dirname, "ui", "browser");
+
+app.use("/", express.static(browserDir, { index: false }));
+
+app.get("/", (_, res) => {
+	res.sendFile(path.join(browserDir, "index.html"));
+});
 
 app.get("/get-customers", async (_, res) => {
 	try {
@@ -276,12 +288,14 @@ app.post("/create-special-product", async (req, res) => {
 
 app.post("/create-recipe", async (req, res) => {
 	try {
-		const { name, specialItemId, recipeLine } = req.body;
+		const { name, materialId, recipeLine } = req.body;
+
+		const specialItemId = await prisma.specialItem.findUnique({ where: { materialId: materialId } });
 
 		const recipe = await prisma.recipe.create({
 			data: {
 				name,
-				specialItemId,
+				specialItemId: specialItemId!.id,
 				recipeLine: {
 					create: recipeLine.map((line: any) => ({
 						materialId: line.materialId,
