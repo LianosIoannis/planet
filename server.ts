@@ -7,6 +7,7 @@ import { type CreatePurchaseWithLotsInput, createPurchaseDocumentWithLots } from
 import { type CreateSaleWithLotsInput, createSaleDocumentWithLots } from "./prisma/seeds/create_sale.js";
 import { prisma } from "./prisma/seeds/seed_client.js";
 import { getLotBalances } from "./prisma/seeds/view_lot_remaining_quantity.js";
+import { getLotUsageDocuments } from "./prisma/seeds/view_lot_usage_documents.js";
 
 const app = express();
 
@@ -148,6 +149,16 @@ app.get("/get-adjustment-documents", async (_, res) => {
 app.get("/get-lot-balances", async (_, res) => {
 	try {
 		const result = await getLotBalances();
+		res.status(200).json({ success: true, data: result });
+	} catch (err) {
+		console.dir(err);
+		res.status(200).json({ success: false, error: JSON.stringify(err) });
+	}
+});
+
+app.get("/get-lot-usage-documents", async (_, res) => {
+	try {
+		const result = await getLotUsageDocuments();
 		res.status(200).json({ success: true, data: result });
 	} catch (err) {
 		console.dir(err);
