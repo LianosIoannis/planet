@@ -44,6 +44,7 @@ export async function getLotBalances(): Promise<FlatLotBalanceRow[]> {
 	// 3) Aggregate net qty (IN - OUT)
 	const netByLot = new Map<number, Prisma.Decimal>();
 	for (const ln of lines) {
+		// biome-ignore lint/style/noNonNullAssertion: <seed>
 		const lotId = ln.materialLotId!;
 		const prev = netByLot.get(lotId) ?? new Prisma.Decimal(0);
 		const delta =
